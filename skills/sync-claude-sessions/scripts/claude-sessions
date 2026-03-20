@@ -127,7 +127,7 @@ def extract_session_data(records: list[dict]) -> dict:
         "summary": None,
         "skills": [],
         "messages": 0,
-        "user_messages": [],
+        "conversation": [],
         "first_timestamp": None,
         "last_timestamp": None,
         "files_created": [],
@@ -165,28 +165,32 @@ def extract_session_data(records: list[dict]) -> dict:
             content = msg.get("content", "")
             if content and isinstance(content, str):
                 if not record.get("isMeta"):
-                    data["user_messages"].append(content)
+                    data["conversation"].append(("user", content))
             elif isinstance(content, list):
                 for item in content:
                     if isinstance(item, dict) and item.get("type") == "text":
                         text = item.get("text", "")
                         if text and not record.get("isMeta"):
-                            data["user_messages"].append(text)
+                            data["conversation"].append(("user", text))
 
         if record_type == "assistant":
             msg = record.get("message", {})
             contents = msg.get("content", [])
             if isinstance(contents, list):
                 for item in contents:
+                    if isinstance(item, dict) and item.get("type") == "text":
+                        text = item.get("text", "")
+                        if text:
+                            data["conversation"].append(("assistant", text))
                     if isinstance(item, dict) and item.get("name") == "Skill":
                         skill_input = item.get("input", {})
                         skill_name = skill_input.get("skill", "")
                         if skill_name and skill_name not in data["skills"]:
                             data["skills"].append(skill_name)
 
-    if not data["title"] and data["user_messages"]:
-        first_msg = data["user_messages"][0]
-        data["title"] = first_msg.replace("\n", " ").strip()[:80]
+    user_msgs = [text for role, text in data["conversation"] if role == "user"]
+    if not data["title"] and user_msgs:
+        data["title"] = user_msgs[0].replace("\n", " ").strip()[:80]
 
     if not data["date"]:
         data["date"] = datetime.now().strftime("%Y-%m-%d")
@@ -398,10 +402,11 @@ def generate_markdown(data: dict, session_id: str, existing_fm: dict | None = No
     # Conversation
     lines.append("## Conversation")
     lines.append("")
-    for msg in data["user_messages"]:
-        lines.append("### User")
+    for role, text in data["conversation"]:
+        label = "User" if role == "user" else "Assistant"
+        lines.append(f"### {label}")
         lines.append("")
-        lines.append(msg)
+        lines.append(text)
         lines.append("")
 
     return "\n".join(lines)
