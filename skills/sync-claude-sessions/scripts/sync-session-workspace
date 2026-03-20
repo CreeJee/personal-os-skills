@@ -1,0 +1,15 @@
+#!/bin/bash
+# Find sync-claude-sessions script by walking up from CWD
+dir="$PWD"
+while [ "$dir" != "/" ]; do
+  script="$dir/.claude/skills/sync-claude-sessions/scripts/claude-sessions"
+  if [ -f "$script" ]; then
+    export VAULT_DIR="$dir"
+    exec python3 "$script" sync
+    exit 0;
+  fi
+  dir=$(dirname "$dir")
+done
+# when no script is found, use the script in the current workspace
+exec python3 "$PWD/.claude/skills/sync-claude-sessions/scripts/claude-sessions" sync
+exit 0;

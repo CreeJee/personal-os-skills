@@ -81,7 +81,7 @@ Auto-sync sessions to Obsidian on every prompt. Add to `~/.claude/settings.json`
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/skills/sync-claude-sessions/scripts/claude-sessions sync",
+            "command": "bash .claude/skills/sync-claude-sessions/scripts/sync-session-workspace.sh",
             "timeout": 10
           }
         ]
@@ -93,7 +93,7 @@ Auto-sync sessions to Obsidian on every prompt. Add to `~/.claude/settings.json`
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/skills/sync-claude-sessions/scripts/claude-sessions sync",
+            "command": "bash .claude/skills/sync-claude-sessions/scripts/sync-session-workspace.sh",
             "timeout": 10
           }
         ]
